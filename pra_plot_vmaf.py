@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
-import sys, argparse, os
+#import sys
+import argparse 
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 import json
@@ -135,7 +137,7 @@ def main():
     vmaf_file_names=[]
     for f in args.vmaf_file:
         jsn = read_json(f)
-        temp_vmafs = [x['metrics']['vmaf'] for x in jsn['frames']]
+        temp_vmafs = [x['metrics']['vmaf_hd'] for x in jsn['frames']]
         vmafs.append(temp_vmafs)
         vmaf_file_names.append(f)
 
