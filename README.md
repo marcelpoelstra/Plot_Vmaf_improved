@@ -1,5 +1,3 @@
-# ---WIP--- 
-
 
 Simple script for vmaf plotting.
 Initial code from https://github.com/master-of-zen/Plot_Vmaf
@@ -9,18 +7,19 @@ To be used with https://github.com/gdavila/easyVmaf
 This version improves on :
 
 - Being agnostic for the destinctive field for 4k and hd in the EasyVmaf output.
-- Introducing .99 percentile in the histogram
+- Using the Mean and Harmonic mean values from the EasyVmaf JSON output instead of recalculating them.
+- Introducing .50 and .99 percentile in the histogram
 - Creating a 5 point grid on the plots, being in line with the JND of 5 points with VMAF measures
 
 
 ## Usage
 ```bash
-python plot_vmaf.py [-h] [-o OUTPUT] [-p] vmaf_file1 vmaf_file2 ..... vmaf_fileX 
+python plot_vmaf_improved.py [-h] [-o OUTPUT] [-p] vmaf_file1 vmaf_file2 ..... vmaf_fileX 
 ```
 
 ## Example
 ```bash
-python plot_vmaf.py vmaf.json -o plot.svg
+python plot_vmaf_improved.py vmaf.json -o plot.svg
 ```
 
 ## Options
