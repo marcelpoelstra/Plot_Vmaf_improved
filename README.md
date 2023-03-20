@@ -1,11 +1,17 @@
 # ---WIP--- 
-# Pra_Plot_Vmaf
-
 
 
 Simple script for vmaf plotting.
 Initial code from https://github.com/master-of-zen/Plot_Vmaf
+Further code from https://github.com/PhilippeR/Pra_Plot_Vmaf
 To be used with https://github.com/gdavila/easyVmaf
+
+This version improves on :
+
+- Being agnostic for the destinctive field for 4k and hd in the EasyVmaf output.
+- Introducing .99 percentile in the histogram
+- Creating a 5 point grid on the plots, being in line with the JND of 5 points with VMAF measures
+
 
 ## Usage
 ```bash
