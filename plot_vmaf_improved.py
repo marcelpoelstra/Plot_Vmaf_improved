@@ -18,7 +18,7 @@ def read_json(file):
         return fl
 
 
-def plot_percentile_vmaf(vmafs,vmaf_file_names):
+def plot_percentile_vmaf(vmafs, vmaf_file_names, ameans, hmeans):
     plt.figure(2)
     fig, ax = plt.subplots()
     
@@ -42,8 +42,8 @@ def plot_percentile_vmaf(vmafs,vmaf_file_names):
         perc_99 = round(np.percentile(vmaf, 99), 2)
         if ymin>perc_1:
             ymin=perc_1
-        hmean=round(harmonic_mean(vmaf),2)
-        amean=round(mean(vmaf),2)    
+        hmean = round(hmeans[i], 2)
+        amean = round(ameans[i], 2)
         y=[perc_1,perc_5,perc_25,perc_50,perc_75,perc_99]
         plotName=basename(vmaf_file_names[i])
         plt.plot(x, y,'-*', label=f'File: {plotName}\n'
@@ -66,41 +66,19 @@ def plot_percentile_vmaf(vmafs,vmaf_file_names):
     fileName, fileExtension = os.path.splitext(args.output)
     plt.savefig(fileName+"_histo"+fileExtension, dpi=500)
 
-def plot_multi_vmaf(vmafs, vmaf_file_names):
+def plot_multi_vmaf(vmafs, vmaf_file_names, ameans, hmeans):
     plt.figure(1)
 
     # Create datapoints
     i = 0
     ymin = 100
 
-    # Initialize the lists inside the function
-    ameans = []
-    hmeans = []
-
-    # Move the for loop and if statement inside the function
-    for f in args.vmaf_file:
-        jsn = read_json(f)
-
-        # Fetch mean and harmonic mean from JSON file
-        pooled_metrics = jsn.get('pooled_metrics', {})
-        if 'vmaf_hd' in pooled_metrics:
-            ameans.append(pooled_metrics['vmaf_hd']['mean'])
-            hmeans.append(pooled_metrics['vmaf_hd']['harmonic_mean'])
-        elif 'vmaf_4k' in pooled_metrics:
-            ameans.append(pooled_metrics['vmaf_4k']['mean'])
-            hmeans.append(pooled_metrics['vmaf_4k']['harmonic_mean'])
-        else:
-            raise ValueError(f"Neither 'vmaf_hd' nor 'vmaf_4k' found in pooled_metrics for file {f}")
-
     for vmaf in vmafs:
         x = [x for x in range(len(vmaf))]
-        plot_size = len(vmaf)
-
-        # Use mean and harmonic mean values from JSON file
         hmean = round(hmeans[i], 2)
         amean = round(ameans[i], 2)
-
-
+        
+        plot_size = len(vmaf)
 
         perc_1 = round(np.percentile(vmaf, 1), 3)
         perc_25 = round(np.percentile(vmaf, 25), 3)
@@ -130,10 +108,9 @@ def plot_multi_vmaf(vmafs, vmaf_file_names):
     # Save
     plt.savefig(args.output, dpi=500)
 
-def plot_vmaf(vmafs):
+def plot_vmaf(vmafs, amean, hmean):
     # Create datapoints
     x = [x for x in range(len(vmafs))]
-    mean = round(sum(vmafs) / len(vmafs), 3)
     plot_size = len(vmafs)
     perc_1 = round(np.percentile(vmafs, 1), 3)
     perc_25 = round(np.percentile(vmafs, 25), 3)
@@ -147,7 +124,7 @@ def plot_vmaf(vmafs):
     # create x axis 10 points grid
     [plt.axhline(i, color='grey', linewidth=0.4) for i in range(0, 100, 5)]
     [plt.axhline(i, color='black', linewidth=0.6) for i in range(0, 100, 10)]
-    plt.plot(x, vmafs, label=f'Frames: {len(vmafs)} Mean:{mean}\n'
+    plt.plot(x, vmafs, label=f'Frames: {len(vmafs)} Harmonic mean:{hmean}\n'
                                 f'1%: {perc_1}  25%: {perc_25}  75%: {perc_75} 99%: {perc_99}', linewidth=0.7)
 
     plt.plot([1, plot_size], [perc_1, perc_1], '-', color='red')
@@ -163,8 +140,8 @@ def plot_vmaf(vmafs):
     plt.plot([1, plot_size], [perc_99, perc_99], ':', color='green')
     plt.annotate(f'99%: {perc_99}', xy=(0, perc_99), color='green')
 
-    plt.plot([1, plot_size], [mean, mean], ':', color='black')
-    plt.annotate(f'Mean: {mean}', xy=(0, mean), color='black')
+    plt.plot([1, plot_size], [hmean, hmean], ':', color='black')
+    plt.annotate(f'Harm. mean: {hmean}', xy=(0, hmean), color='black')
     plt.ylabel('VMAF')
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), fancybox=True, shadow=True)
     plt.ylim(int(perc_1), 100)
@@ -177,10 +154,26 @@ def plot_vmaf(vmafs):
 def main():
     vmafs = []
     vmaf_file_names = []
+
+    # Initialize the lists inside the main function
+    ameans = []
+    hmeans = []
+
     for f in args.vmaf_file:
         jsn = read_json(f)
+
+        # Fetch mean and harmonic mean from JSON file
+        pooled_metrics = jsn.get('pooled_metrics', {})
+        if 'vmaf_hd' in pooled_metrics:
+            ameans.append(pooled_metrics['vmaf_hd']['mean'])
+            hmeans.append(pooled_metrics['vmaf_hd']['harmonic_mean'])
+        elif 'vmaf_4k' in pooled_metrics:
+            ameans.append(pooled_metrics['vmaf_4k']['mean'])
+            hmeans.append(pooled_metrics['vmaf_4k']['harmonic_mean'])
+        else:
+            raise ValueError(f"Neither 'vmaf_hd' nor 'vmaf_4k' found in pooled_metrics for file {f}")
+
         temp_vmafs = []
-# be agnostic for different hd and 4k fields
         for x in jsn['frames']:
             if 'vmaf_hd' in x['metrics']:
                 temp_vmafs.append(x['metrics']['vmaf_hd'])
@@ -192,12 +185,12 @@ def main():
         vmaf_file_names.append(f)
 
     if len(vmafs) == 1:
-        plot_vmaf(vmafs[0])
+        plot_vmaf(vmafs[0], ameans[0], hmeans[0])  # Pass mean and harmonic mean as arguments
     else:
-        plot_multi_vmaf(vmafs, vmaf_file_names)
+        plot_multi_vmaf(vmafs, vmaf_file_names, ameans, hmeans)  # Pass mean and harmonic mean lists as arguments
 
     if args.percent:
-        plot_percentile_vmaf(vmafs, vmaf_file_names)
+        plot_percentile_vmaf(vmafs, vmaf_file_names, ameans, hmeans)  # Pass mean and harmonic mean lists as arguments
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description='Plot vmaf to graph')
