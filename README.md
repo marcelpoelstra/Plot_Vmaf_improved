@@ -1,11 +1,10 @@
 
-Simple script for vmaf plotting.
+Simple script for plotting the output of easyVmaf (https://github.com/gdavila/easyVmaf)
 
 Initial code from https://github.com/master-of-zen/Plot_Vmaf
 
 Further code from https://github.com/PhilippeR/Pra_Plot_Vmaf
 
-To be used with https://github.com/gdavila/easyVmaf
 
 This version improves on :
 
