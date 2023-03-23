@@ -10,9 +10,10 @@ To be used with https://github.com/gdavila/easyVmaf
 This version improves on :
 
 - Being agnostic for the distinctive field for 4k and hd in the EasyVmaf output.
-- Using the Mean and Harmonic mean values from the EasyVmaf JSON output instead of recalculating
-- Introducing .50 and .99 percentile in the histogram
-- Creating a 5 point grid on the plots, being in line with the JND of 5 points with VMAF measures
+- Using the Mean and Harmonic mean values from the EasyVmaf JSON output instead of recalculating.
+- Introducing .50 and .99 percentile in the histogram.
+- Creating a a more useful grid on the plots, so it's easier to read the JND of 5 VMAF points.
+- Focussing on Harmonic Mean instead of Mean values as indicator in the plots.
 
 
 ## Usage
