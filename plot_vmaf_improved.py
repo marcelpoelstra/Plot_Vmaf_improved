@@ -175,7 +175,7 @@ def export_tiff_frames(vmafs, vmaf_file_names):
         os.makedirs(output_dir, exist_ok=True)
 
         for frame_number in low_quality_frames:
-            output_tiff_filename = f"{output_dir}/{basename}_frame{frame_number:03}.tif"
+            output_tiff_filename = f"{output_dir}/{os.path.basename(basename)}_frame{frame_number:03}.tif"
 
             # Extract the frame using FFmpeg
             subprocess.run(['ffmpeg', '-y', '-i', video_filename, '-vf', f'select=eq(n\\,{frame_number})', '-vframes', '1', '-update', '1', '-f', 'image2', output_tiff_filename])
