@@ -3,9 +3,12 @@
 #import sys
 import argparse 
 import os
+import os.path
 import numpy as np
 import matplotlib.pyplot as plt
 import json
+import subprocess
+from PIL import Image, ImageDraw, ImageFont
 from math import log10
 from statistics import mean, harmonic_mean
 from os.path import basename
@@ -150,6 +153,56 @@ def plot_vmaf(vmafs, amean, hmean):
 
     # Save
     plt.savefig(args.output, dpi=500)
+    
+
+import os.path
+
+import os.path
+
+import os.path
+
+def export_tiff_frames(vmafs, vmaf_file_names):
+    for i, vmaf in enumerate(vmafs):
+        perc_1 = round(np.percentile(vmaf, 1), 3)
+        low_quality_frames = [idx for idx, score in enumerate(vmaf) if score < perc_1]
+
+        json_filename = vmaf_file_names[i]
+        video_filename = json_filename.replace('_vmaf.json', '.mp4')
+        basename = os.path.splitext(json_filename)[0]
+
+        # Create subdirectory for low-quality frames
+        output_dir = f"{basename}_lowframes"
+        os.makedirs(output_dir, exist_ok=True)
+
+        for frame_number in low_quality_frames:
+            output_tiff_filename = f"{output_dir}/{basename}_frame{frame_number:03}.tif"
+
+            # Extract the frame using FFmpeg
+            subprocess.run(['ffmpeg', '-y', '-i', video_filename, '-vf', f'select=eq(n\\,{frame_number})', '-vframes', '1', '-update', '1', '-f', 'image2', output_tiff_filename])
+
+            # Add overlay text with a black background
+            frame_image = Image.open(output_tiff_filename)
+            draw = ImageDraw.Draw(frame_image)
+
+            # Adjust font size based on image height
+            font_size = int(frame_image.height * 0.03)
+
+            # Use a system font
+            font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+            if not os.path.exists(font_path):
+                print(f"Warning: Font not found at {font_path}. Text overlay may not display as expected.")
+            font = ImageFont.truetype(font_path, font_size)
+
+            text = f"{os.path.basename(video_filename)}\nVMAF: {vmaf[frame_number]:.3f}\nFrame: {frame_number}"
+            text_bbox = draw.multiline_textbbox((10, 10), text, font=font)
+            text_width, text_height = int(text_bbox[2]), int(text_bbox[3])
+            draw.rectangle([(10, 10), (10 + text_width, 10 + text_height)], fill="black")
+            draw.multiline_text((10, 10), text, font=font, fill=(255, 255, 255))
+
+            # Save the TIFF image with LZW compression
+            frame_image.save(output_tiff_filename, compression="tiff_lzw")
+
+
 
 def main():
     vmafs = []
@@ -192,11 +245,17 @@ def main():
     if args.percent:
         plot_percentile_vmaf(vmafs, vmaf_file_names, ameans, hmeans)  # Pass mean and harmonic mean lists as arguments
 
+    if args.frames:
+        export_tiff_frames(vmafs, vmaf_file_names)
+
+
+
 def parse_arguments():
     parser = argparse.ArgumentParser(description='Plot vmaf to graph')
     parser.add_argument('vmaf_file', type=str,nargs='+', help='Vmaf log file')
     parser.add_argument('-o','--output', dest='output', type=str, default='./output/plot.png', help='Graph output filename (default plot.png)')
     parser.add_argument('-p','--percent', help='Plot percentile', action='store_true')
+    parser.add_argument('-f', '--frames', help='Export frames with VMAF below 1% percentile', action='store_true')
 
     return(parser.parse_args())
 

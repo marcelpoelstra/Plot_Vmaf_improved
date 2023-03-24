@@ -1,2 +1,3 @@
-Matplotlib
-Numpy
+numpy
+matplotlib
+Pillow
