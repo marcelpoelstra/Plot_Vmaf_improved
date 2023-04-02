@@ -174,6 +174,10 @@ def export_tiff_frames(vmafs, vmaf_file_names):
         output_dir = f"{basename}_lowframes"
         os.makedirs(output_dir, exist_ok=True)
 
+        # Get the duration of each frame in seconds
+        frame_duration = subprocess.check_output(['ffprobe', '-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=avg_frame_rate', '-of', 'default=noprint_wrappers=1:nokey=1', video_filename])
+        frame_duration = float(eval(frame_duration.strip().decode('utf-8')))
+
         for frame_number in low_quality_frames:
             output_tiff_filename = f"{output_dir}/{os.path.basename(basename)}_frame{frame_number:03}.tif"
 
@@ -193,7 +197,11 @@ def export_tiff_frames(vmafs, vmaf_file_names):
                 print(f"Warning: Font not found at {font_path}. Text overlay may not display as expected.")
             font = ImageFont.truetype(font_path, font_size)
 
-            text = f"{os.path.basename(video_filename)}\nVMAF: {vmaf[frame_number]:.3f}\nFrame: {frame_number}"
+            # Calculate the time stamp for the frame
+            time_stamp = frame_number * frame_duration
+            time_stamp_formatted = f"{int(time_stamp // 3600):02}:{int((time_stamp % 3600) // 60):02}:{int((time_stamp % 60) * 1000):03}"
+
+            text = f"{os.path.basename(video_filename)}\nVMAF: {vmaf[frame_number]:.3f}\nFrame: {frame_number}\nTime: {time_stamp_formatted}"
             text_bbox = draw.multiline_textbbox((10, 10), text, font=font)
             text_width, text_height = int(text_bbox[2]), int(text_bbox[3])
             draw.rectangle([(10, 10), (10 + text_width, 10 + text_height)], fill="black")
@@ -201,6 +209,7 @@ def export_tiff_frames(vmafs, vmaf_file_names):
 
             # Save the TIFF image with LZW compression
             frame_image.save(output_tiff_filename, compression="tiff_lzw")
+
 
 
 
