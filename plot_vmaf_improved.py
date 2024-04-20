@@ -111,7 +111,7 @@ def plot_multi_vmaf(vmafs, vmaf_file_names, ameans, hmeans):
     # Save
     plt.savefig(args.output, dpi=500)
 
-def plot_vmaf(vmafs, amean, hmean):
+def plot_vmaf(vmafs, amean, hmean, filename):
     # Create datapoints
     x = [x for x in range(len(vmafs))]
     plot_size = len(vmafs)
@@ -120,15 +120,14 @@ def plot_vmaf(vmafs, amean, hmean):
     perc_50 = round(np.percentile(vmafs, 50), 3)
     perc_75 = round(np.percentile(vmafs, 75), 3)
     perc_99 = round(np.percentile(vmafs, 99), 3)
+    plotName = basename(filename)  # Get the basename of the file
 
     # Plot
     figure_width = 3 + round((4 * log10(plot_size)))
     plt.figure(figsize=(figure_width, 5))
-    # create x axis 10 points grid
     [plt.axhline(i, color='grey', linewidth=0.4) for i in range(0, 100, 5)]
     [plt.axhline(i, color='black', linewidth=0.6) for i in range(0, 100, 10)]
-    plt.plot(x, vmafs, label=f'Frames: {len(vmafs)} Harmonic mean:{hmean}\n'
-                                f'1%: {perc_1}  25%: {perc_25}  75%: {perc_75} 99%: {perc_99}', linewidth=0.7)
+    plt.plot(x, vmafs, label=f'File: {plotName}\nFrames: {len(vmafs)} Harmonic mean:{hmean}\n1%: {perc_1}  25%: {perc_25}  75%: {perc_75} 99%: {perc_99}', linewidth=0.7)
 
     plt.plot([1, plot_size], [perc_1, perc_1], '-', color='red')
     plt.annotate(f'1%: {perc_1}', xy=(0, perc_1), color='red')
@@ -137,9 +136,8 @@ def plot_vmaf(vmafs, amean, hmean):
     plt.annotate(f'25%: {perc_25}', xy=(0, perc_25), color='orange')
 
     plt.plot([1, plot_size], [perc_75, perc_75], ':', color='blue')
-# add .50 and .99 percentile
     plt.annotate(f'75%: {perc_75}', xy=(0, perc_75), color='blue')
-# add .50 and .99 percentile 
+
     plt.plot([1, plot_size], [perc_99, perc_99], ':', color='green')
     plt.annotate(f'99%: {perc_99}', xy=(0, perc_99), color='green')
 
@@ -153,6 +151,7 @@ def plot_vmaf(vmafs, amean, hmean):
 
     # Save
     plt.savefig(args.output, dpi=500)
+
     
 def export_tiff_frames(vmafs, vmaf_file_names):
     for i, vmaf in enumerate(vmafs):
@@ -241,15 +240,15 @@ def main():
         vmaf_file_names.append(f)
 
     if len(vmafs) == 1:
-        plot_vmaf(vmafs[0], ameans[0], hmeans[0])  # Pass mean and harmonic mean as arguments
+        plot_vmaf(vmafs[0], ameans[0], hmeans[0], vmaf_file_names[0])  # Pass mean, harmonic mean, and filename as arguments
     else:
-        plot_multi_vmaf(vmafs, vmaf_file_names, ameans, hmeans)  # Pass mean and harmonic mean lists as arguments
+        plot_multi_vmaf(vmafs, vmaf_file_names, ameans, hmeans)  # Pass lists as arguments for multi VMAF plotting
 
     if args.percent:
-        plot_percentile_vmaf(vmafs, vmaf_file_names, ameans, hmeans)  # Pass mean and harmonic mean lists as arguments
+        plot_percentile_vmaf(vmafs, vmaf_file_names, ameans, hmeans)  # Pass lists as arguments for percentile VMAF plotting
 
     if args.frames:
-        export_tiff_frames(vmafs, vmaf_file_names)
+        export_tiff_frames(vmafs, vmaf_file_names)  # Export TIFF frames based on the lowest percentile
 
 
 
