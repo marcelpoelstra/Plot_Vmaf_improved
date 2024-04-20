@@ -154,13 +154,6 @@ def plot_vmaf(vmafs, amean, hmean):
     # Save
     plt.savefig(args.output, dpi=500)
     
-
-import os.path
-
-import os.path
-
-import os.path
-
 def export_tiff_frames(vmafs, vmaf_file_names):
     for i, vmaf in enumerate(vmafs):
         perc_1 = round(np.percentile(vmaf, 1), 3)
@@ -191,11 +184,12 @@ def export_tiff_frames(vmafs, vmaf_file_names):
             # Adjust font size based on image height
             font_size = int(frame_image.height * 0.03)
 
-            # Use a system font
-            font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
-            if not os.path.exists(font_path):
-                print(f"Warning: Font not found at {font_path}. Text overlay may not display as expected.")
-            font = ImageFont.truetype(font_path, font_size)
+            try:
+                # Use a common system font or a similar alternative
+                font = ImageFont.truetype("/Library/Fonts/Arial.ttf" if os.path.exists("/Library/Fonts/Arial.ttf") else "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", font_size)
+            except IOError:
+                # Fallback to a default PIL font if specific fonts are not found
+                font = ImageFont.load_default()
 
             # Calculate the time stamp for the frame
             time_stamp = frame_number * frame_duration
