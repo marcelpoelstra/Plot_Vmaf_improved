@@ -171,7 +171,8 @@ def export_tiff_frames(vmafs, vmaf_file_names):
         frame_duration = float(eval(frame_duration.strip().decode('utf-8')))
 
         for frame_number in low_quality_frames:
-            output_tiff_filename = f"{output_dir}/{os.path.basename(basename)}_frame{frame_number:03}.tif"
+            rounded_vmaf_score = round(vmaf[frame_number])
+            output_tiff_filename = f"{output_dir}/{os.path.basename(basename)}_VMAF{rounded_vmaf_score}_frame{frame_number:03}.tif"
 
             # Extract the frame using FFmpeg
             subprocess.run(['ffmpeg', '-y', '-i', video_filename, '-vf', f'select=eq(n\\,{frame_number})', '-vframes', '1', '-update', '1', '-f', 'image2', output_tiff_filename])
@@ -202,7 +203,6 @@ def export_tiff_frames(vmafs, vmaf_file_names):
 
             # Save the TIFF image with LZW compression
             frame_image.save(output_tiff_filename, compression="tiff_lzw")
-
 
 
 
